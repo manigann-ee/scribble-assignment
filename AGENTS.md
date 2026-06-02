@@ -39,10 +39,11 @@ You are working on a monolithic repository for a multiplayer drawing game ("Scri
 <!-- SPECKIT START -->
 ## Active Plan
 
-**Feature**: Room Setup & Lobby
-**Plan**: `specs/001-room-setup-lobby/plan.md`
-**Data Model**: `specs/001-room-setup-lobby/data-model.md`
-**API Contracts**: `specs/001-room-setup-lobby/contracts/api.md`
+**Feature**: Draw, Guess & Score
+**Plan**: `specs/003-draw-guess-score/plan.md`
+**Data Model**: `specs/003-draw-guess-score/data-model.md`
+**API Contracts**: `specs/003-draw-guess-score/contracts/api.md`
+**Tasks**: `specs/003-draw-guess-score/tasks.md`
 
 ## Agent Persona
 -   Give concise, direct answers.
