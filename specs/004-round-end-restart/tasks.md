@@ -25,7 +25,7 @@
 
 **Purpose**: Verify that the development environment is ready.
 
-- [ ] T001 Verify backend and frontend dev servers start successfully (`cd backend && npm run dev`, `cd frontend && npm run dev`)
+- [X] T001 Verify backend and frontend dev servers start successfully (`cd backend && npm run dev`, `cd frontend && npm run dev`)
 
 ---
 
@@ -35,13 +35,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 [P] Add `"reveal"` to `RoomStatus` union type in `backend/src/models/game.ts`
-- [ ] T003 Update `toRoomSnapshot()` in `backend/src/services/roomStore.ts` to include `secretWord` for all viewers when `status === "reveal"` (FG3 restricted it to drawer only during `"playing"`)
-- [ ] T004 [P] Add `endRoundSchema` (participantId only) to `backend/src/api/schemas.ts`
-- [ ] T005 [P] Update frontend `RoomSnapshot` interface to include `"reveal"` in status type in `frontend/src/services/api.ts`
-- [ ] T006 [P] Add `endRound()` and `restartGame()` methods to the frontend `api` object in `frontend/src/services/api.ts`
-- [ ] T007 Add `endRound`, `restartGame` actions and reveal/restart state handling to `RoomStore` class in `frontend/src/state/roomStore.ts` (including polling-based navigation triggers for status changes)
-- [ ] T008 Add `/result` route to `frontend/src/routes/index.tsx` pointing to `ResultPage`
+- [X] T002 [P] Add `"reveal"` to `RoomStatus` union type in `backend/src/models/game.ts`
+- [X] T003 Update `toRoomSnapshot()` in `backend/src/services/roomStore.ts` to include `secretWord` for all viewers when `status === "reveal"` (FG3 restricted it to drawer only during `"playing"`)
+- [X] T004 [P] Add `endRoundSchema` (participantId only) to `backend/src/api/schemas.ts`
+- [X] T005 [P] Update frontend `RoomSnapshot` interface to include `"reveal"` in status type in `frontend/src/services/api.ts`
+- [X] T006 [P] Add `endRound()` and `restartGame()` methods to the frontend `api` object in `frontend/src/services/api.ts`
+- [X] T007 Add `endRound`, `restartGame` actions and reveal/restart state handling to `RoomStore` class in `frontend/src/state/roomStore.ts` (including polling-based navigation triggers for status changes)
+- [X] T008 Add `/result` route to `frontend/src/routes/index.tsx` pointing to `ResultPage`
 
 **Checkpoint**: Foundation ready — "reveal" status exists on both ends, API methods are callable, frontend can detect status changes via polling.
 
@@ -55,17 +55,17 @@
 
 ### Backend — Round End
 
-- [ ] T009 [P] [US1] Implement `endRound()` in `backend/src/services/roomStore.ts` that validates the requester is the host, sets `room.status` to `"reveal"`, and returns the updated room
-- [ ] T010 [US1] Implement auto-detect all-correct round end: in the guess submission logic of `backend/src/services/roomStore.ts`, after a correct guess, check if all non-drawer participants have guessed correctly and auto-transition to `"reveal"` status
-- [ ] T011 [P] [US1] Add `POST /rooms/:code/end-round` route in `backend/src/api/rooms.ts` (host-only, validates with endRoundSchema)
+- [X] T009 [P] [US1] Implement `endRound()` in `backend/src/services/roomStore.ts` that validates the requester is the host, sets `room.status` to `"reveal"`, and returns the updated room
+- [X] T010 [US1] Implement auto-detect all-correct round end: in the guess submission logic of `backend/src/services/roomStore.ts`, after a correct guess, check if all non-drawer participants have guessed correctly and auto-transition to `"reveal"` status
+- [X] T011 [P] [US1] Add `POST /rooms/:code/end-round` route in `backend/src/api/rooms.ts` (host-only, validates with endRoundSchema)
 
 ### Frontend — Result Screen
 
-- [ ] T012 [P] [US1] Create `WordReveal` component in `frontend/src/components/WordReveal.tsx` that displays the secret word prominently on the result screen
-- [ ] T013 [P] [US1] Create `ResultHistory` component in `frontend/src/components/ResultHistory.tsx` that renders the complete guess history (guesser name, guess text, correct/incorrect indicator, score awarded) in chronological order
-- [ ] T014 [US1] Create `ResultPage` in `frontend/src/pages/ResultPage.tsx` that composes `WordReveal`, `Scoreboard`, and `ResultHistory` to show the full result screen; redirects to lobby if room status is not `"reveal"`
-- [ ] T015 [US1] Add "End Round" button to `GamePage` in `frontend/src/pages/GamePage.tsx` — visible only to the host during active gameplay; calls `roomStore.endRound()` on click
-- [ ] T016 [US1] Implement automatic navigation from `GamePage`/`LobbyPage` to `ResultPage` when polling detects `status === "reveal"` in `frontend/src/state/roomStore.ts`
+- [X] T012 [P] [US1] Create `WordReveal` component in `frontend/src/components/WordReveal.tsx` that displays the secret word prominently on the result screen
+- [X] T013 [P] [US1] Create `ResultHistory` component in `frontend/src/components/ResultHistory.tsx` that renders the complete guess history (guesser name, guess text, correct/incorrect indicator, score awarded) in chronological order
+- [X] T014 [US1] Create `ResultPage` in `frontend/src/pages/ResultPage.tsx` that composes `WordReveal`, `Scoreboard`, and `ResultHistory` to show the full result screen; redirects to lobby if room status is not `"reveal"`
+- [X] T015 [US1] Add "End Round" button to `GamePage` in `frontend/src/pages/GamePage.tsx` — visible only to the host during active gameplay; calls `roomStore.endRound()` on click
+- [X] T016 [US1] Implement automatic navigation from `GamePage`/`LobbyPage` to `ResultPage` when polling detects `status === "reveal"` in `frontend/src/state/roomStore.ts`
 
 **Checkpoint**: Result screen works end-to-end — host clicks "End Round", both players see result with word, scores, and history. Auto-detect works when all guessers guess correctly.
 
@@ -79,14 +79,14 @@
 
 ### Backend — Restart
 
-- [ ] T017 [US2] Implement `restartGame()` in `backend/src/services/roomStore.ts` that validates the requester is the host, clears round fields (`secretWord`, `strokes`, `guesses`, `scores`, `drawerId`), and sets status to `"lobby"`
-- [ ] T018 [P] [US2] Add `POST /rooms/:code/restart` route in `backend/src/api/rooms.ts` (host-only, validates with endRoundSchema)
+- [X] T017 [US2] Implement `restartGame()` in `backend/src/services/roomStore.ts` that validates the requester is the host, clears round fields (`secretWord`, `strokes`, `guesses`, `scores`, `drawerId`), and sets status to `"lobby"`
+- [X] T018 [P] [US2] Add `POST /rooms/:code/restart` route in `backend/src/api/rooms.ts` (host-only, validates with endRoundSchema)
 
 ### Frontend — Restart UI
 
-- [ ] T019 [US2] Add "Play Again" button to `ResultPage` in `frontend/src/pages/ResultPage.tsx` — visible only to the host; calls `roomStore.restartGame()` on click. Non-host players see "Waiting for host to restart..." message instead.
-- [ ] T020 [US2] Implement automatic navigation from `ResultPage` to `LobbyPage` when polling detects `status === "lobby"` in `frontend/src/state/roomStore.ts`
-- [ ] T021 [US2] Verify `LobbyPage` in `frontend/src/pages/LobbyPage.tsx` correctly displays the preserved player list and allows the host to start a new game after restart
+- [X] T019 [US2] Add "Play Again" button to `ResultPage` in `frontend/src/pages/ResultPage.tsx` — visible only to the host; calls `roomStore.restartGame()` on click. Non-host players see "Waiting for host to restart..." message instead.
+- [X] T020 [US2] Implement automatic navigation from `ResultPage` to `LobbyPage` when polling detects `status === "lobby"` in `frontend/src/state/roomStore.ts`
+- [X] T021 [US2] Verify `LobbyPage` in `frontend/src/pages/LobbyPage.tsx` correctly displays the preserved player list and allows the host to start a new game after restart
 
 **Checkpoint**: Full loop working — round ends → result screen → host restarts → lobby with preserved players → host starts new game.
 
@@ -96,12 +96,12 @@
 
 **Purpose**: Guards, edge cases, and final validation.
 
-- [ ] T022 [P] Add non-host guard: reject `POST /rooms/:code/end-round` and `POST /rooms/:code/restart` when the requester is not the host in `backend/src/api/rooms.ts` (403 response)
-- [ ] T023 Add reveal status lock: reject drawing and guessing actions when `room.status === "reveal"` in `backend/src/services/roomStore.ts`
-- [ ] T024 Add restart idempotency guard: return current room state (no-op) if restart is called when status is already `"lobby"` in `backend/src/services/roomStore.ts`
-- [ ] T025 Handle rapid restart clicks on frontend: disable the "Play Again" button immediately on click in `frontend/src/pages/ResultPage.tsx`
+- [X] T022 [P] Add non-host guard: reject `POST /rooms/:code/end-round` and `POST /rooms/:code/restart` when the requester is not the host in `backend/src/api/rooms.ts` (403 response)
+- [X] T023 Add reveal status lock: reject drawing and guessing actions when `room.status === "reveal"` in `backend/src/services/roomStore.ts`
+- [X] T024 Add restart idempotency guard: return current room state (no-op) if restart is called when status is already `"lobby"` in `backend/src/services/roomStore.ts`
+- [X] T025 Handle rapid restart clicks on frontend: disable the "Play Again" button immediately on click in `frontend/src/pages/ResultPage.tsx`
 - [ ] T026 Run `quickstart.md` validation steps to confirm all acceptance criteria pass across two browser tabs
-- [ ] T027 Verify TypeScript compilation on both backend and frontend (`npx tsc --noEmit` in each)
+- [X] T027 Verify TypeScript compilation on both backend and frontend (`npx tsc --noEmit` in each)
 
 **Checkpoint**: All acceptance criteria from spec.md verifiable. Guards working. Edge cases handled.
 
@@ -111,10 +111,10 @@
 
 **Purpose**: Unit tests covering core validation and state transition logic.
 
-- [ ] T028 Write unit test for `endRound()`: host validation, state transition to `"reveal"`, rejection when round not active
-- [ ] T029 Write unit test for `restartGame()`: host validation, state clear, idempotency guard
-- [ ] T030 Write unit test for reveal status lock: drawing and guessing rejected when `status === "reveal"`
-- [ ] T031 Write unit test for auto-end-round: all guessers correct triggers transition to `"reveal"`
+- [X] T028 Write unit test for `endRound()`: host validation, state transition to `"reveal"`, rejection when round not active
+- [X] T029 Write unit test for `restartGame()`: host validation, state clear, idempotency guard
+- [X] T030 Write unit test for reveal status lock: drawing and guessing rejected when `status === "reveal"`
+- [X] T031 Write unit test for auto-end-round: all guessers correct triggers transition to `"reveal"`
 
 ---
 

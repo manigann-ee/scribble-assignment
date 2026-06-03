@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addStroke, clearCanvas, createRoom, getRoom, joinRoom, saveRoom, startGame, submitGuess, toRoomSnapshot, transferHost } from "./roomStore.js";
+import { addStroke, clearCanvas, createRoom, endRound, getRoom, joinRoom, restartGame, saveRoom, startGame, submitGuess, toRoomSnapshot, transferHost } from "./roomStore.js";
 
 describe("roomStore", () => {
   it("createRoom returns a room with a 4-character uppercase code", () => {
@@ -337,16 +337,17 @@ describe("roomStore", () => {
 
   it("submitGuess matches exact guess case-insensitively after trim", () => {
     const { room, participantId } = createRoom("Alice");
-    const joiner = joinRoom(room.code, "Bob");
+    const joiner1 = joinRoom(room.code, "Bob")!;
+    joinRoom(room.code, "Charlie");
     startGame(room.code, participantId);
 
     const secretWord = getRoom(room.code)!.secretWord!;
 
-    const result1 = submitGuess(room.code, joiner!.participantId, `  ${secretWord.toUpperCase()}  `);
+    const result1 = submitGuess(room.code, joiner1.participantId, `  ${secretWord.toUpperCase()}  `);
     expect(result1!.correct).toBe(true);
     expect(result1!.score).toBe(100);
 
-    const result2 = submitGuess(room.code, joiner!.participantId, secretWord.toLowerCase());
+    const result2 = submitGuess(room.code, joiner1.participantId, secretWord.toLowerCase());
     expect(result2!.correct).toBe(true);
     expect(result2!.score).toBe(0);
   });
@@ -406,6 +407,7 @@ describe("roomStore", () => {
   it("submitGuess duplicate correct guess by same player awards 0", () => {
     const { room, participantId } = createRoom("Alice");
     const joiner = joinRoom(room.code, "Bob")!;
+    joinRoom(room.code, "Charlie");
     startGame(room.code, participantId);
 
     const secretWord = getRoom(room.code)!.secretWord!;
@@ -476,5 +478,180 @@ describe("roomStore", () => {
     expect(() =>
       addStroke(room.code, participantId, [{ x: 0.1, y: 0.2 }, { x: 0.3, y: 0.4 }], "#000000", 3)
     ).toThrow("Round is not active");
+  });
+
+  it("endRound rejects non-host participant", () => {
+    const { room, participantId } = createRoom("Alice");
+    const joiner = joinRoom(room.code, "Bob")!;
+    startGame(room.code, participantId);
+
+    expect(() => endRound(room.code, joiner.participantId)).toThrow(
+      "Only the host can end the round"
+    );
+  });
+
+  it("endRound transitions room status to reveal", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+
+    const result = endRound(room.code, participantId);
+
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("reveal");
+  });
+
+  it("endRound rejects when round is not active", () => {
+    const { room, participantId } = createRoom("Alice");
+
+    expect(() => endRound(room.code, participantId)).toThrow(
+      "Round is not currently active"
+    );
+  });
+
+  it("endRound returns null for nonexistent room", () => {
+    const result = endRound("NOPE", "p1");
+    expect(result).toBeNull();
+  });
+
+  it("restartGame rejects non-host participant", () => {
+    const { room, participantId } = createRoom("Alice");
+    const joiner = joinRoom(room.code, "Bob")!;
+    startGame(room.code, participantId);
+    endRound(room.code, participantId);
+
+    expect(() => restartGame(room.code, joiner.participantId)).toThrow(
+      "Only the host can restart the game"
+    );
+  });
+
+  it("restartGame clears round state and returns to lobby", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+    endRound(room.code, participantId);
+
+    const result = restartGame(room.code, participantId);
+
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("lobby");
+    expect(result!.drawerId).toBeNull();
+    expect(result!.secretWord).toBeNull();
+    expect(result!.strokes).toEqual([]);
+    expect(result!.guesses).toEqual([]);
+    expect(result!.scores).toEqual({});
+  });
+
+  it("restartGame preserves participants", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+    endRound(room.code, participantId);
+
+    const result = restartGame(room.code, participantId);
+
+    expect(result!.participants).toHaveLength(2);
+  });
+
+  it("restartGame rejects when in playing state (not reveal)", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+
+    expect(() => restartGame(room.code, participantId)).toThrow(
+      "Game can only be restarted from the result screen"
+    );
+  });
+
+  it("restartGame is idempotent when already in lobby", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+
+    const result = restartGame(room.code, participantId);
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("lobby");
+  });
+
+  it("restartGame returns null for nonexistent room", () => {
+    const result = restartGame("NOPE", "p1");
+    expect(result).toBeNull();
+  });
+
+  it("reveal status lock rejects strokes", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+    endRound(room.code, participantId);
+
+    expect(() =>
+      addStroke(room.code, participantId, [{ x: 0.1, y: 0.2 }, { x: 0.3, y: 0.4 }], "#000000", 3)
+    ).toThrow("Round is not active");
+  });
+
+  it("reveal status lock rejects guesses", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+    endRound(room.code, participantId);
+
+    expect(() => submitGuess(room.code, participantId, "test")).toThrow("Round is over");
+  });
+
+  it("auto-end-round transitions to reveal when all guessers correct", () => {
+    const { room, participantId } = createRoom("Alice");
+    const joiner1 = joinRoom(room.code, "Bob")!;
+    joinRoom(room.code, "Charlie");
+    startGame(room.code, participantId);
+
+    const secretWord = getRoom(room.code)!.secretWord!;
+
+    submitGuess(room.code, joiner1.participantId, secretWord);
+
+    const snapshot = getRoom(room.code)!;
+    expect(snapshot.status).toBe("playing");
+
+    const snapshotAfter = getRoom(room.code)!;
+    const charlieGuess = snapshotAfter.participants.find((p) => p.id !== participantId && p.id !== joiner1.participantId)!;
+    submitGuess(room.code, charlieGuess.id, secretWord);
+
+    const finalSnapshot = getRoom(room.code)!;
+    expect(finalSnapshot.status).toBe("reveal");
+  });
+
+  it("auto-end-round does not trigger when some guessers incorrect", () => {
+    const { room, participantId } = createRoom("Alice");
+    const joiner = joinRoom(room.code, "Bob")!;
+    joinRoom(room.code, "Charlie");
+    startGame(room.code, participantId);
+
+    const secretWord = getRoom(room.code)!.secretWord!;
+
+    submitGuess(room.code, joiner.participantId, secretWord);
+
+    const snapshot = getRoom(room.code)!;
+    expect(snapshot.status).toBe("playing");
+  });
+
+  it("toRoomSnapshot reveals secretWord to all when status is reveal", () => {
+    const { room, participantId } = createRoom("Alice");
+    const joiner = joinRoom(room.code, "Bob")!;
+    startGame(room.code, participantId);
+    endRound(room.code, participantId);
+
+    const drawerSnapshot = toRoomSnapshot(getRoom(room.code)!, participantId);
+    expect(drawerSnapshot.secretWord).toBeDefined();
+
+    const guesserSnapshot = toRoomSnapshot(getRoom(room.code)!, joiner.participantId);
+    expect(guesserSnapshot.secretWord).toBeDefined();
+  });
+
+  it("toRoomSnapshot includes secretWord in reveal even without participantId", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+    endRound(room.code, participantId);
+
+    const snapshot = toRoomSnapshot(getRoom(room.code)!);
+    expect(snapshot.secretWord).toBeDefined();
   });
 });

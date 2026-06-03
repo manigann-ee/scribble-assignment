@@ -3,6 +3,7 @@ import { AppShell } from "../components/AppShell";
 import { CreateRoomPage } from "../pages/CreateRoomPage";
 import { GamePage } from "../pages/GamePage";
 import { JoinRoomPage } from "../pages/JoinRoomPage";
+import { ResultPage } from "../pages/ResultPage";
 import { LobbyPage } from "../pages/LobbyPage";
 import { StartPage } from "../pages/StartPage";
 
@@ -16,6 +17,7 @@ export function AppRoutes() {
           <Route path="/join-room" element={<JoinRoomPage />} />
           <Route path="/lobby" element={<LobbyPage />} />
           <Route path="/game" element={<GamePage />} />
+          <Route path="/result" element={<ResultPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>

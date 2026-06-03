@@ -2,15 +2,17 @@ import { Router } from "express";
 import {
   clearCanvasSchema,
   createRoomSchema,
+  endRoundSchema,
   guessSubmissionSchema,
   HttpError,
   joinRoomSchema,
+  restartGameSchema,
   roomCodeParamsSchema,
   roomViewerQuerySchema,
   startGameSchema,
   strokeSchema
 } from "./schemas.js";
-import { addStroke, clearCanvas, createRoom, getRoom, joinRoom, startGame, submitGuess, toRoomSnapshot } from "../services/roomStore.js";
+import { addStroke, clearCanvas, createRoom, endRound, getRoom, joinRoom, restartGame, startGame, submitGuess, toRoomSnapshot } from "../services/roomStore.js";
 
 export function createRoomsRouter() {
   const router = Router();
@@ -137,6 +139,50 @@ export function createRoomsRouter() {
       if (error instanceof Error && error.message === "Round is over") {
         next(new HttpError(400, error.message));
       } else if (error instanceof Error && (error.message === "Guess cannot be empty" || error.message === "Guess must be 100 characters or fewer")) {
+        next(new HttpError(400, error.message));
+      } else {
+        next(error);
+      }
+    }
+  });
+
+  router.post("/:code/end-round", (request, response, next) => {
+    try {
+      const { code } = roomCodeParamsSchema.parse(request.params);
+      const { participantId } = endRoundSchema.parse(request.body);
+      const room = endRound(code.toUpperCase(), participantId);
+
+      if (!room) {
+        throw new HttpError(404, "Room not found");
+      }
+
+      response.json(toRoomSnapshot(room, participantId));
+    } catch (error) {
+      if (error instanceof Error && error.message === "Only the host can end the round") {
+        next(new HttpError(403, error.message));
+      } else if (error instanceof Error && error.message === "Round is not currently active") {
+        next(new HttpError(400, error.message));
+      } else {
+        next(error);
+      }
+    }
+  });
+
+  router.post("/:code/restart", (request, response, next) => {
+    try {
+      const { code } = roomCodeParamsSchema.parse(request.params);
+      const { participantId } = restartGameSchema.parse(request.body);
+      const room = restartGame(code.toUpperCase(), participantId);
+
+      if (!room) {
+        throw new HttpError(404, "Room not found");
+      }
+
+      response.json(toRoomSnapshot(room, participantId));
+    } catch (error) {
+      if (error instanceof Error && error.message === "Only the host can restart the game") {
+        next(new HttpError(403, error.message));
+      } else if (error instanceof Error && error.message === "Game can only be restarted from the result screen") {
         next(new HttpError(400, error.message));
       } else {
         next(error);

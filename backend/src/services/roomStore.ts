@@ -238,7 +238,69 @@ export function submitGuess(code: string, participantId: string, text: string): 
   room.guesses.push(guess);
   saveRoom(room);
 
+  if (correct) {
+    const guessers = room.participants.filter((p) => p.id !== room.drawerId);
+    const allCorrect = guessers.every((g) =>
+      room.guesses.some((gu) => gu.participantId === g.id && gu.correct)
+    );
+    if (allCorrect && guessers.length > 0) {
+      room.status = "reveal";
+      saveRoom(room);
+    }
+  }
+
   return { correct, score, guess };
+}
+
+export function endRound(code: string, participantId: string) {
+  const room = rooms.get(code);
+
+  if (!room) {
+    return null;
+  }
+
+  if (room.hostId !== participantId) {
+    throw new Error("Only the host can end the round");
+  }
+
+  if (room.status !== "playing") {
+    throw new Error("Round is not currently active");
+  }
+
+  room.status = "reveal";
+  saveRoom(room);
+
+  return getRoom(code);
+}
+
+export function restartGame(code: string, participantId: string) {
+  const room = rooms.get(code);
+
+  if (!room) {
+    return null;
+  }
+
+  if (room.hostId !== participantId) {
+    throw new Error("Only the host can restart the game");
+  }
+
+  if (room.status === "lobby") {
+    return getRoom(code); // idempotent: already in lobby
+  }
+
+  if (room.status !== "reveal") {
+    throw new Error("Game can only be restarted from the result screen");
+  }
+
+  room.secretWord = null;
+  room.strokes = [];
+  room.guesses = [];
+  room.scores = {};
+  room.drawerId = null;
+  room.status = "lobby";
+  saveRoom(room);
+
+  return getRoom(code);
 }
 
 export function transferHost(room: Room) {
@@ -274,7 +336,9 @@ export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSe
     room: snapshot
   };
 
-  if (viewerParticipantId && room.status === "playing" && room.drawerId === viewerParticipantId && room.secretWord) {
+  if (room.status === "reveal" && room.secretWord) {
+    response.secretWord = room.secretWord;
+  } else if (viewerParticipantId && room.status === "playing" && room.drawerId === viewerParticipantId && room.secretWord) {
     response.secretWord = room.secretWord;
   }
 

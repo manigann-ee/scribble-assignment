@@ -10,12 +10,24 @@ import { useRoomStore, useRoomState } from "../state/roomStore";
 
 export function GamePage() {
   const navigate = useNavigate();
-  const { room, participantId, isDrawer, secretWord } = useRoomState();
+  const { room, participantId, isDrawer, isHost, secretWord } = useRoomState();
   const store = useRoomStore();
 
   useEffect(() => {
     if (!room) {
       navigate("/", { replace: true });
+      return;
+    }
+
+    store.startPolling();
+    return () => {
+      store.stopPolling();
+    };
+  }, [navigate, room, store]);
+
+  useEffect(() => {
+    if (room && room.status === "reveal") {
+      navigate("/result", { replace: true });
     }
   }, [navigate, room]);
 
@@ -85,10 +97,15 @@ export function GamePage() {
         </aside>
       </div>
 
-      <div className="button-row">
+      <div className="button-row button-row--spread">
         <button className="button button--secondary" onClick={() => navigate("/lobby")}>
           Exit Game
         </button>
+        {isHost && (
+          <button className="button button--primary" onClick={() => store.endRound()}>
+            End Round
+          </button>
+        )}
       </div>
     </section>
   );
