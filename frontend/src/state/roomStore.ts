@@ -14,19 +14,22 @@ export interface RoomState {
   participantId: string | null;
   error: string | null;
   isLoading: boolean;
+  isHost: boolean;
 }
 
 type Listener = () => void;
 
-class RoomStore {
+export class RoomStore {
   private state: RoomState = {
     room: null,
     participantId: null,
     error: null,
-    isLoading: false
+    isLoading: false,
+    isHost: false
   };
 
   private listeners = new Set<Listener>();
+  private pollingIntervalId: ReturnType<typeof setInterval> | null = null;
 
   subscribe = (listener: Listener) => {
     this.listeners.add(listener);
@@ -66,14 +69,16 @@ class RoomStore {
     this.setState({
       participantId: response.participantId,
       room: response.room,
-      error: null
+      error: null,
+      isHost: response.participantId === response.room.hostId
     });
   }
 
   setRoomSnapshot(room: RoomSnapshot) {
     this.setState({
       room,
-      error: null
+      error: null,
+      isHost: this.state.participantId === room.hostId
     });
   }
 
@@ -97,6 +102,41 @@ class RoomStore {
     const response = await api.fetchRoom(this.state.room.code, this.state.participantId ?? undefined);
     this.setRoomSnapshot(response.room);
     return response.room;
+  }
+
+  startPolling() {
+    if (this.pollingIntervalId) {
+      return;
+    }
+
+    this.pollingIntervalId = setInterval(() => {
+      this.fetchRoom().catch(() => {
+        this.setState({ error: "Unable to reach the server. Retrying..." });
+      });
+    }, 2000);
+  }
+
+  stopPolling() {
+    if (this.pollingIntervalId) {
+      clearInterval(this.pollingIntervalId);
+      this.pollingIntervalId = null;
+    }
+  }
+
+  async startGame() {
+    if (!this.state.room || !this.state.participantId) {
+      return null;
+    }
+
+    const response = await this.withLoading(() =>
+      api.startGame(this.state.room!.code, this.state.participantId!)
+    );
+
+    if (response) {
+      this.setRoomSnapshot(response.room);
+    }
+
+    return response;
   }
 }
 

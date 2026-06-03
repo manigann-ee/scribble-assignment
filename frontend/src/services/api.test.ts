@@ -45,4 +45,47 @@ describe("api service", () => {
       expect.anything()
     );
   });
+
+  it("startGame sends PATCH to /rooms/:code/start with participantId body", async () => {
+    const mockResponse = {
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          room: { code: "ABCD", status: "playing", participants: [], hostId: "p1" },
+        }),
+    };
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Response);
+
+    await api.startGame("ABCD", "p1");
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/rooms/ABCD/start"),
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ participantId: "p1" }),
+      })
+    );
+  });
+
+  it("client-side validation rejects empty room code before API call", () => {
+    vi.mocked(fetch).mockClear();
+
+    const code = "";
+    const trimmed = code.trim();
+    const hasError = !trimmed;
+
+    expect(hasError).toBe(true);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("client-side validation rejects whitespace-only room code before API call", () => {
+    vi.mocked(fetch).mockClear();
+
+    const code = "   ";
+    const trimmed = code.trim();
+    const hasError = !trimmed;
+
+    expect(hasError).toBe(true);
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });

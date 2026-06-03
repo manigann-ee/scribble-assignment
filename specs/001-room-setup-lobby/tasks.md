@@ -32,27 +32,27 @@ No tasks.
 
 ### Tasks
 
-- [ ] T001 [US1] [US2] [US4] Add `hostId: string` to `Room` and `RoomSnapshot` in `backend/src/models/game.ts`. Expand `RoomStatus` to `"lobby" | "playing"`.
+- [X] T001 [US1] [US2] [US4] Add `hostId: string` to `Room` and `RoomSnapshot` in `backend/src/models/game.ts`. Expand `RoomStatus` to `"lobby" | "playing"`.
   - **Depends On**: None
   - **Requirements**: FR-002, FR-010
   - **Completion Evidence**: `Room` type compiles with `hostId` field. `RoomStatus` accepts `"playing"`. Existing tests still pass.
 
-- [ ] T002 [US1] [US2] [US4] Set `hostId` in `createRoom()` in `backend/src/services/roomStore.ts`. Add `startGame(code, participantId)` with host validation (must match `room.hostId`) and player-count validation (must be >= 2). Add `transferHost(room)` that reassigns host to earliest-joined remaining participant. Add player name trimming (whitespace → "Player" default).
+- [X] T002 [US1] [US2] [US4] Set `hostId` in `createRoom()` in `backend/src/services/roomStore.ts`. Add `startGame(code, participantId)` with host validation (must match `room.hostId`) and player-count validation (must be >= 2). Add `transferHost(room)` that reassigns host to earliest-joined remaining participant. Add player name trimming (whitespace → "Player" default).
   - **Depends On**: T001
   - **Requirements**: FR-002, FR-010, FR-011, FR-012, FR-013
   - **Completion Evidence**: `roomStore.createRoom` sets `hostId`. `startGame` returns room with status `"playing"` or throws appropriate errors. `transferHost` reassigns correctly. Name trimming works.
 
-- [ ] T003 [P] [US4] Add `startGameSchema` (participantId required) in `backend/src/api/schemas.ts`. Tighten `playerName` validation in create/join schemas: accepted as optional string, trimmed, default "Player" on empty.
+- [X] T003 [P] [US4] Add `startGameSchema` (participantId required) in `backend/src/api/schemas.ts`. Tighten `playerName` validation in create/join schemas: accepted as optional string, trimmed, default "Player" on empty.
   - **Depends On**: None (parallel with T002)
   - **Requirements**: FR-010, FR-013
   - **Completion Evidence**: `startGameSchema` validates `{ participantId: string }`. Create/join schemas trim names and default to "Player".
 
-- [ ] T004 [US4] Add `PATCH /:code/start` route handler in `backend/src/api/rooms.ts`. Call `startGame()` from roomStore, return updated room snapshot with status `"playing"`. Map errors to HTTP responses (403, 400, 404).
+- [X] T004 [US4] Add `PATCH /:code/start` route handler in `backend/src/api/rooms.ts`. Call `startGame()` from roomStore, return updated room snapshot with status `"playing"`. Map errors to HTTP responses (403, 400, 404).
   - **Depends On**: T002, T003
   - **Requirements**: FR-010, FR-011
   - **Completion Evidence**: Sending `PATCH /rooms/ABCD/start` with non-host participantId returns 403. With <2 players returns 400. With valid host + ≥2 players returns 200 with `status: "playing"`.
 
-- [ ] T005 [P] [US1] [US2] [US4] Write/update backend unit tests for foundational changes in `backend/src/services/roomStore.test.ts`:
+- [X] T005 [P] [US1] [US2] [US4] Write/update backend unit tests for foundational changes in `backend/src/services/roomStore.test.ts`:
   - `createRoom` sets `hostId` equal to creator's participant ID
   - `createRoom` assigns "Player" when name is empty/whitespace
   - `joinRoom` allows duplicate display names
@@ -77,17 +77,17 @@ No tasks.
 
 ### Tasks
 
-- [ ] T006 [P] [US1] Add `hostId: string` to the `RoomSnapshot` interface in `frontend/src/services/api.ts`. Update the type to match the backend's expanded `RoomSnapshot`.
+- [X] T006 [P] [US1] Add `hostId: string` to the `RoomSnapshot` interface in `frontend/src/services/api.ts`. Update the type to match the backend's expanded `RoomSnapshot`.
   - **Depends On**: T001 (model change exists)
   - **Requirements**: FR-002
   - **Completion Evidence**: `RoomSnapshot` type includes `hostId`. Frontend compiles without type errors.
 
-- [ ] T007 [P] [US1] Add `isHost: boolean` to `RoomState` in `frontend/src/state/roomStore.ts`. Compute as `participantId === room.hostId`. Expose via `useRoomState()`.
+- [X] T007 [P] [US1] Add `isHost: boolean` to `RoomState` in `frontend/src/state/roomStore.ts`. Compute as `participantId === room.hostId`. Expose via `useRoomState()`.
   - **Depends On**: T006
   - **Requirements**: FR-002
   - **Completion Evidence**: After creating a room, `useRoomState().isHost` is `true`. State updates when `room.hostId` changes.
 
-- [ ] T008 [US1] Add integration test for full create-room flow in `backend/src/services/roomStore.test.ts`: create room → verify hostId matches participantId → verify room code is 4-char unique.
+- [X] T008 [US1] Add integration test for full create-room flow in `backend/src/services/roomStore.test.ts`: create room → verify hostId matches participantId → verify room code is 4-char unique.
   - **Depends On**: T001, T002
   - **Requirements**: FR-001, FR-002, FR-004
   - **Completion Evidence**: Test passes: creates room, hostId = creator, code format correct.
@@ -109,7 +109,7 @@ No tasks.
 
 ### Tasks
 
-- [ ] T010 [P] [US2] Add client-side room code validation in `frontend/src/pages/JoinRoomPage.tsx`:
+- [X] T010 [P] [US2] Add client-side room code validation in `frontend/src/pages/JoinRoomPage.tsx`:
   - Reject empty code before API call — show "Room code is required"
   - Trim whitespace — if result is empty, reject with same error
   - Only send `POST /rooms/:code/join` if code is non-empty after trim
@@ -117,7 +117,7 @@ No tasks.
   - **Requirements**: FR-005, FR-006
   - **Completion Evidence**: Entering empty or whitespace-only code shows "Room code is required" immediately. No network request is sent for invalid codes.
 
-- [ ] T011 [US2] Write frontend test for code validation in `frontend/src/services/api.test.ts`: verify empty/whitespace codes are rejected before fetch is called.
+- [X] T011 [US2] Write frontend test for code validation in `frontend/src/services/api.test.ts`: verify empty/whitespace codes are rejected before fetch is called.
   - **Depends On**: T010
   - **Requirements**: FR-005, FR-006
   - **Completion Evidence**: Test verifies that `fetch` is NOT called for empty/whitespace inputs.
@@ -145,17 +145,17 @@ No tasks.
 
 ### Tasks
 
-- [ ] T013 [P] [US3] Add `startPolling()` and `stopPolling()` methods to `RoomStore` class in `frontend/src/state/roomStore.ts`. Use `setInterval` at 2000ms calling `fetchRoom()`. Store interval ID for cleanup.
+- [X] T013 [P] [US3] Add `startPolling()` and `stopPolling()` methods to `RoomStore` class in `frontend/src/state/roomStore.ts`. Use `setInterval` at 2000ms calling `fetchRoom()`. Store interval ID for cleanup.
   - **Depends On**: T001 (GET endpoint returns hostId), T006 (frontend type)
   - **Requirements**: FR-009, NFR-001
   - **Completion Evidence**: `startPolling()` begins calling `fetchRoom()` every ~2s. `stopPolling()` clears the interval. `fetchRoom()` errors do not crash the store.
 
-- [ ] T014 [US3] Wire polling into `LobbyPage` in `frontend/src/pages/LobbyPage.tsx`: add `useEffect` that calls `startPolling()` on mount and `stopPolling()` on unmount (cleanup function). Show error message when poll fails (without crashing).
+- [X] T014 [US3] Wire polling into `LobbyPage` in `frontend/src/pages/LobbyPage.tsx`: add `useEffect` that calls `startPolling()` on mount and `stopPolling()` on unmount (cleanup function). Show error message when poll fails (without crashing).
   - **Depends On**: T013
   - **Requirements**: FR-009, NFR-002
   - **Completion Evidence**: LobbyPage calls `startPolling` on mount. Navigate away → polling stops (no console errors for cleanup). Poll failure shows message but continues retrying.
 
-- [ ] T015 [P] [US3] Write frontend tests for polling in `frontend/src/state/roomStore.test.ts` (or new test file): verify `startPolling` sets interval, `stopPolling` clears it.
+- [X] T015 [P] [US3] Write frontend tests for polling in `frontend/src/state/roomStore.test.ts` (or new test file): verify `startPolling` sets interval, `stopPolling` clears it.
   - **Depends On**: T013
   - **Requirements**: NFR-001, NFR-002
   - **Completion Evidence**: `npm test` passes in frontend. Poll timer is managed correctly.
@@ -181,7 +181,7 @@ No tasks.
 
 ### Tasks
 
-- [ ] T017 [US4] Update `LobbyPage` in `frontend/src/pages/LobbyPage.tsx`:
+- [X] T017 [US4] Update `LobbyPage` in `frontend/src/pages/LobbyPage.tsx`:
   - Conditionally disable/hide "Start Game" button based on `isHost`
   - Conditionally disable button when `participants.length < 2`
   - On click, call `roomStore.startGame()`, then navigate to `/game` on success
@@ -190,12 +190,12 @@ No tasks.
   - **Requirements**: FR-010, FR-011
   - **Completion Evidence**: Host sees enabled button only when ≥2 players. Non-host sees disabled/hidden button. Clicking start navigates to `/game`. Error displayed on failure.
 
-- [ ] T018 [US4] Write frontend test for startGame API call in `frontend/src/services/api.test.ts`: verify `PATCH /rooms/:code/start` is called with correct body.
+- [X] T018 [US4] Write frontend test for startGame API call in `frontend/src/services/api.test.ts`: verify `PATCH /rooms/:code/start` is called with correct body.
   - **Depends On**: T017
   - **Requirements**: FR-010
   - **Completion Evidence**: Test verifies API call shape matches contract.
 
-- [ ] T019 [US4] Write backend integration test for full lobby-to-game flow in `backend/src/services/roomStore.test.ts` or new test file: create room → join room → start game → verify status = "playing".
+- [X] T019 [US4] Write backend integration test for full lobby-to-game flow in `backend/src/services/roomStore.test.ts` or new test file: create room → join room → start game → verify status = "playing".
   - **Depends On**: T001, T002, T003, T004
   - **Requirements**: FR-001, FR-002, FR-003, FR-010, FR-011
   - **Completion Evidence**: Full integration test passes end-to-end.
@@ -226,7 +226,7 @@ No tasks.
 
 **Purpose**: Final validation, documentation updates, and edge case hardening.
 
-- [ ] T022 [P] Run `cd backend && npm test` and `cd frontend && npm test` — all tests must pass.
+- [X] T022 [P] Run `cd backend && npm test` and `cd frontend && npm test` — all tests must pass.
   - **Depends On**: T005, T008, T011, T015, T018, T019
   - **Requirements**: All
   - **Completion Evidence**: Both backend and frontend test suites pass.
@@ -236,12 +236,12 @@ No tasks.
   - **Requirements**: SC-001 through SC-006
   - **Completion Evidence**: All 10 manual verification scenarios from plan.md pass.
 
-- [ ] T024 Update AGENTS.md active plan references if any file paths changed during implementation.
+- [X] T024 Update AGENTS.md active plan references if any file paths changed during implementation.
   - **Depends On**: T022
   - **Requirements**: Traceability (constitution)
   - **Completion Evidence**: AGENTS.md references match actual file paths.
 
-- [ ] T025 [P] Code review pass: verify no debug logs, no commented-out code, no out-of-scope features (WebSockets, databases, auth), no new dependencies added.
+- [X] T025 [P] Code review pass: verify no debug logs, no commented-out code, no out-of-scope features (WebSockets, databases, auth), no new dependencies added.
   - **Depends On**: T022
   - **Requirements**: NFR-004, NFR-005, constitution compliance
   - **Completion Evidence**: Review checklist complete. No scope violations found.
