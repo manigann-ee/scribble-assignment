@@ -4,7 +4,7 @@
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/api.md
 
-**Tests**: Tests are NOT included in this task breakdown unless explicitly requested.
+**Tests**: Core unit tests are included in Phase 6; E2E validation is manual via quickstart.md.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -79,7 +79,7 @@
 
 ### Backend — Restart
 
-- [ ] T017 [US2] Implement `restartGame()` in `backend/src/services/roomStore.ts` that validates the requester is the host, clears round fields (`secretWord`, `strokes`, `guesses`, `scores`, `drawerId`), sets status to `"lobby"`, and includes an idempotency guard (no-op if status is already `"lobby"`)
+- [ ] T017 [US2] Implement `restartGame()` in `backend/src/services/roomStore.ts` that validates the requester is the host, clears round fields (`secretWord`, `strokes`, `guesses`, `scores`, `drawerId`), and sets status to `"lobby"`
 - [ ] T018 [P] [US2] Add `POST /rooms/:code/restart` route in `backend/src/api/rooms.ts` (host-only, validates with endRoundSchema)
 
 ### Frontend — Restart UI
@@ -104,6 +104,17 @@
 - [ ] T027 Verify TypeScript compilation on both backend and frontend (`npx tsc --noEmit` in each)
 
 **Checkpoint**: All acceptance criteria from spec.md verifiable. Guards working. Edge cases handled.
+
+---
+
+## Phase 6: Automated Tests
+
+**Purpose**: Unit tests covering core validation and state transition logic.
+
+- [ ] T028 Write unit test for `endRound()`: host validation, state transition to `"reveal"`, rejection when round not active
+- [ ] T029 Write unit test for `restartGame()`: host validation, state clear, idempotency guard
+- [ ] T030 Write unit test for reveal status lock: drawing and guessing rejected when `status === "reveal"`
+- [ ] T031 Write unit test for auto-end-round: all guessers correct triggers transition to `"reveal"`
 
 ---
 

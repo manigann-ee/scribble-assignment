@@ -113,7 +113,7 @@ Clears round state and returns all players to the lobby.
     "status": "reveal",
     "participants": [...],
     "hostId": "uuid-of-host",
-    "drawerId": null,
+    "drawerId": "uuid-of-drawer",
     "secretWord": "rocket",
     "strokes": [...],
     "guesses": [
