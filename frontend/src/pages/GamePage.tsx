@@ -9,7 +9,7 @@ import { useRoomState } from "../state/roomStore";
 
 export function GamePage() {
   const navigate = useNavigate();
-  const { room, participantId } = useRoomState();
+  const { room, participantId, isDrawer, secretWord } = useRoomState();
 
   useEffect(() => {
     if (!room) {
@@ -28,7 +28,7 @@ export function GamePage() {
       <div className="game-page__header">
         <div className="game-page__header-left">
           <span className="section-kicker">Round 1</span>
-          <h1 className="game-page__title">Guess the Word!</h1>
+          <h1 className="game-page__title">{isDrawer ? "Draw the Word!" : "Guess the Word!"}</h1>
         </div>
         <RoomCodeBadge code={room.code} />
       </div>
@@ -42,7 +42,7 @@ export function GamePage() {
         <div className="game-page__main">
           <Card title="Canvas">
             <div className="canvas-placeholder" style={{ minHeight: '500px', backgroundColor: '#ffffff', border: '1px solid #e5e7eb' }}>
-              Waiting for drawer...
+              {isDrawer ? "Draw your masterpiece here!" : "Waiting for drawing..."}
             </div>
           </Card>
         </div>
@@ -56,14 +56,27 @@ export function GamePage() {
               </div>
               <div>
                 <dt>Status</dt>
-                <dd>Playing</dd>
+                <dd>{isDrawer ? "Drawing" : "Guessing"}</dd>
               </div>
+              {isDrawer && secretWord && (
+                <div>
+                  <dt>Your Word</dt>
+                  <dd className="secret-word">{secretWord}</dd>
+                </div>
+              )}
             </dl>
+            {isDrawer && (
+              <div className="drawer-badge">
+                You are the drawer
+              </div>
+            )}
           </Card>
 
-          <Card title="Your Guess">
-            <GuessForm />
-          </Card>
+          {!isDrawer && (
+            <Card title="Your Guess">
+              <GuessForm />
+            </Card>
+          )}
         </aside>
       </div>
 

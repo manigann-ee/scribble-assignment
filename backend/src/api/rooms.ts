@@ -17,10 +17,7 @@ export function createRoomsRouter() {
       const { playerName } = createRoomSchema.parse(request.body);
       const result = createRoom(playerName);
 
-      response.status(201).json({
-        participantId: result.participantId,
-        room: toRoomSnapshot(result.room, result.participantId)
-      });
+      response.status(201).json(toRoomSnapshot(result.room, result.participantId));
     } catch (error) {
       next(error);
     }
@@ -36,10 +33,7 @@ export function createRoomsRouter() {
         throw new HttpError(404, "Unable to join room");
       }
 
-      response.json({
-        participantId: result.participantId,
-        room: toRoomSnapshot(result.room, result.participantId)
-      });
+      response.json(toRoomSnapshot(result.room, result.participantId));
     } catch (error) {
       next(error);
     }
@@ -55,13 +49,11 @@ export function createRoomsRouter() {
         throw new HttpError(404, "Room not found");
       }
 
-      response.json({
-        room: toRoomSnapshot(room, participantId)
-      });
+      response.json(toRoomSnapshot(room, participantId));
     } catch (error) {
       if (error instanceof Error && error.message === "Only the host can start the game") {
         next(new HttpError(403, error.message));
-      } else if (error instanceof Error && error.message === "At least 2 players are required to start") {
+      } else if (error instanceof Error && (error.message === "At least 2 players are required to start" || error.message === "All players must have a name")) {
         next(new HttpError(400, error.message));
       } else {
         next(error);
@@ -79,9 +71,7 @@ export function createRoomsRouter() {
         throw new HttpError(404, "Unable to load room");
       }
 
-      response.json({
-        room: toRoomSnapshot(room, participantId)
-      });
+      response.json(toRoomSnapshot(room, participantId));
     } catch (error) {
       next(error);
     }

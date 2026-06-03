@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRoom, joinRoom, startGame, getRoom, transferHost } from "./roomStore.js";
+import { createRoom, joinRoom, startGame, getRoom, saveRoom, transferHost, toRoomSnapshot } from "./roomStore.js";
 
 describe("roomStore", () => {
   it("createRoom returns a room with a 4-character uppercase code", () => {
@@ -142,5 +142,91 @@ describe("roomStore", () => {
     expect(snapB!.participants).toHaveLength(2);
     expect(snapA!.participants.every((p) => p.name !== "Diana")).toBe(true);
     expect(snapB!.participants.every((p) => p.name !== "Charlie")).toBe(true);
+  });
+
+  it("startGame trims all participant names before processing", () => {
+    const { room, participantId } = createRoom("Alice  ");
+    joinRoom(room.code, "  Bob  ");
+
+    const result = startGame(room.code, participantId);
+
+    expect(result).not.toBeNull();
+    expect(result!.participants[0].name).toBe("Alice");
+    expect(result!.participants[1].name).toBe("Bob");
+  });
+
+  it("startGame rejects if any trimmed name is empty", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+
+    const beforeGame = getRoom(room.code)!;
+    beforeGame.participants[1].name = "   ";
+    saveRoom(beforeGame);
+
+    expect(() => startGame(room.code, participantId)).toThrow(
+      "All players must have a name"
+    );
+  });
+
+  it("startGame sets drawerId equal to hostId", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+
+    const result = startGame(room.code, participantId);
+
+    expect(result).not.toBeNull();
+    expect(result!.drawerId).toBe(participantId);
+  });
+
+  it("startGame selects word deterministically from starter list", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+
+    const result = startGame(room.code, participantId);
+
+    expect(result).not.toBeNull();
+
+    const validWords = ["rocket", "pizza", "castle", "guitar", "sunflower"];
+    expect(validWords).toContain(result!.secretWord);
+
+    const sameRoom = startGame(room.code, participantId);
+    expect(sameRoom!.secretWord).toBe(result!.secretWord);
+  });
+
+  it("same room code always yields the same word", () => {
+    const a = createRoom("Alice");
+    joinRoom(a.room.code, "Bob");
+    const resultA = startGame(a.room.code, a.participantId);
+
+    const b = createRoom("Charlie");
+    joinRoom(b.room.code, "Diana");
+    const resultB = startGame(b.room.code, b.participantId);
+
+    const expectedWordA = getRoom(a.room.code)!.secretWord;
+    const expectedWordB = getRoom(b.room.code)!.secretWord;
+
+    expect(expectedWordA).toBe(resultA!.secretWord);
+    expect(expectedWordB).toBe(resultB!.secretWord);
+  });
+
+  it("toRoomSnapshot includes secretWord when viewer is the drawer", () => {
+    const { room, participantId } = createRoom("Alice");
+    joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+
+    const snapshot = toRoomSnapshot(getRoom(room.code)!, participantId);
+
+    expect(snapshot.secretWord).toBeDefined();
+    expect(typeof snapshot.secretWord).toBe("string");
+  });
+
+  it("toRoomSnapshot excludes secretWord when viewer is not the drawer", () => {
+    const { room, participantId } = createRoom("Alice");
+    const joiner = joinRoom(room.code, "Bob");
+    startGame(room.code, participantId);
+
+    const snapshot = toRoomSnapshot(getRoom(room.code)!, joiner!.participantId);
+
+    expect(snapshot.secretWord).toBeUndefined();
   });
 });

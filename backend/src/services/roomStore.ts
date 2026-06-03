@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Participant, Room, RoomSnapshot } from "../models/game.js";
+import type { Participant, Room, RoomSessionResponse, RoomSnapshot } from "../models/game.js";
 import { STARTER_ROLES, STARTER_WORDS } from "../seed/starterData.js";
 
 const rooms = new Map<string, Room>();
@@ -57,6 +57,8 @@ export function createRoom(playerName?: string) {
     status: "lobby",
     participants: [participant],
     hostId: participant.id,
+    drawerId: null,
+    secretWord: null,
     createdAt: now(),
     updatedAt: now()
   };
@@ -113,7 +115,18 @@ export function startGame(code: string, participantId: string) {
     throw new Error("At least 2 players are required to start");
   }
 
+  for (const p of room.participants) {
+    p.name = p.name.trim();
+    if (!p.name) {
+      throw new Error("All players must have a name");
+    }
+  }
+
+  room.drawerId = room.hostId;
+  const hash = room.code.split("").reduce((sum, c) => sum + c.charCodeAt(0), 0);
+  room.secretWord = [...STARTER_WORDS][hash % STARTER_WORDS.length];
   room.status = "playing";
+
   saveRoom(room);
 
   return getRoom(code);
@@ -133,15 +146,25 @@ export function transferHost(room: Room) {
   rooms.set(room.code, cloneRoom(room));
 }
 
-export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSnapshot {
-  void viewerParticipantId;
-
-  return {
+export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSessionResponse {
+  const snapshot: RoomSnapshot = {
     code: room.code,
     status: room.status,
     participants: room.participants.map((participant) => ({ ...participant })),
     hostId: room.hostId,
+    drawerId: room.drawerId,
     availableWords: listWords(),
     roles: [...STARTER_ROLES]
   };
+
+  const response: RoomSessionResponse = {
+    participantId: viewerParticipantId ?? "",
+    room: snapshot
+  };
+
+  if (viewerParticipantId && room.status === "playing" && room.drawerId === viewerParticipantId && room.secretWord) {
+    response.secretWord = room.secretWord;
+  }
+
+  return response;
 }

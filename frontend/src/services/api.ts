@@ -11,6 +11,7 @@ export interface RoomSnapshot {
   status: "lobby" | "playing";
   participants: Participant[];
   hostId: string;
+  drawerId: string | null;
   availableWords: string[];
   roles: ParticipantRole[];
 }
@@ -18,6 +19,7 @@ export interface RoomSnapshot {
 export interface RoomSessionResponse {
   participantId: string;
   room: RoomSnapshot;
+  secretWord?: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -57,10 +59,10 @@ export const api = {
   },
   fetchRoom(code: string, participantId?: string) {
     const query = participantId ? `?participantId=${encodeURIComponent(participantId)}` : "";
-    return request<{ room: RoomSnapshot }>(`/rooms/${encodeURIComponent(code)}${query}`);
+    return request<RoomSessionResponse>(`/rooms/${encodeURIComponent(code)}${query}`);
   },
   startGame(code: string, participantId: string) {
-    return request<{ room: RoomSnapshot }>(`/rooms/${encodeURIComponent(code)}/start`, {
+    return request<RoomSessionResponse>(`/rooms/${encodeURIComponent(code)}/start`, {
       method: "PATCH",
       body: JSON.stringify({ participantId })
     });

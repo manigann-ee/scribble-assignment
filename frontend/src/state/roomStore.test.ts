@@ -30,3 +30,78 @@ describe("RoomStore polling", () => {
     expect(setIntervalSpy).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("RoomStore role detection", () => {
+  let store: RoomStore;
+
+  beforeEach(() => {
+    store = new RoomStore();
+  });
+
+  it("isDrawer is true when participantId matches drawerId", () => {
+    store.setRoomSession({
+      participantId: "p1",
+      room: {
+        code: "ABCD",
+        status: "playing",
+        participants: [],
+        hostId: "p1",
+        drawerId: "p1",
+        availableWords: [],
+        roles: ["drawer", "guesser"]
+      },
+      secretWord: "rocket"
+    });
+
+    const state = store.getSnapshot();
+    expect(state.isDrawer).toBe(true);
+    expect(state.secretWord).toBe("rocket");
+  });
+
+  it("isDrawer is false when participantId does not match drawerId", () => {
+    store.setRoomSession({
+      participantId: "p2",
+      room: {
+        code: "ABCD",
+        status: "playing",
+        participants: [],
+        hostId: "p1",
+        drawerId: "p1",
+        availableWords: [],
+        roles: ["drawer", "guesser"]
+      }
+    });
+
+    const state = store.getSnapshot();
+    expect(state.isDrawer).toBe(false);
+    expect(state.secretWord).toBeNull();
+  });
+
+  it("setRoomSnapshot computes isDrawer correctly", () => {
+    store.setRoomSession({
+      participantId: "p1",
+      room: {
+        code: "ABCD",
+        status: "lobby",
+        participants: [],
+        hostId: "p1",
+        drawerId: null,
+        availableWords: [],
+        roles: ["drawer", "guesser"]
+      }
+    });
+
+    store.setRoomSnapshot({
+      code: "ABCD",
+      status: "playing",
+      participants: [],
+      hostId: "p1",
+      drawerId: "p1",
+      availableWords: [],
+      roles: ["drawer", "guesser"]
+    });
+
+    const state = store.getSnapshot();
+    expect(state.isDrawer).toBe(true);
+  });
+});

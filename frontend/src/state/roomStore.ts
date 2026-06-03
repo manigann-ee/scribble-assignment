@@ -15,6 +15,8 @@ export interface RoomState {
   error: string | null;
   isLoading: boolean;
   isHost: boolean;
+  isDrawer: boolean;
+  secretWord: string | null;
 }
 
 type Listener = () => void;
@@ -25,7 +27,9 @@ export class RoomStore {
     participantId: null,
     error: null,
     isLoading: false,
-    isHost: false
+    isHost: false,
+    isDrawer: false,
+    secretWord: null
   };
 
   private listeners = new Set<Listener>();
@@ -70,7 +74,9 @@ export class RoomStore {
       participantId: response.participantId,
       room: response.room,
       error: null,
-      isHost: response.participantId === response.room.hostId
+      isHost: response.participantId === response.room.hostId,
+      isDrawer: response.participantId === response.room.drawerId,
+      secretWord: response.secretWord ?? null
     });
   }
 
@@ -78,7 +84,8 @@ export class RoomStore {
     this.setState({
       room,
       error: null,
-      isHost: this.state.participantId === room.hostId
+      isHost: this.state.participantId === room.hostId,
+      isDrawer: this.state.participantId === room.drawerId
     });
   }
 
@@ -100,7 +107,7 @@ export class RoomStore {
     }
 
     const response = await api.fetchRoom(this.state.room.code, this.state.participantId ?? undefined);
-    this.setRoomSnapshot(response.room);
+    this.setRoomSession(response);
     return response.room;
   }
 

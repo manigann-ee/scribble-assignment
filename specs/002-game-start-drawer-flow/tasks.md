@@ -23,9 +23,9 @@
 
 **Purpose**: Define all shared types needed across user stories
 
-- [ ] T001 [P] Add `hostId: string`, `drawerId: string | null`, `secretWord: string | null` to `Room`. Add `hostId`, `drawerId` to `RoomSnapshot`. Expand `RoomStatus` to `"lobby" | "playing"` in `backend/src/models/game.ts`
-- [ ] T002 [P] Add `startGameSchema` with `participantId` validation in `backend/src/api/schemas.ts`
-- [ ] T003 [P] Update `RoomSnapshot` with `hostId`, `drawerId`. Add `RoomSessionResponse` with optional `secretWord` in `frontend/src/services/api.ts`
+- [X] T001 [P] Add `hostId: string`, `drawerId: string | null`, `secretWord: string | null` to `Room`. Add `hostId`, `drawerId` to `RoomSnapshot`. Expand `RoomStatus` to `"lobby" | "playing"` in `backend/src/models/game.ts`
+- [X] T002 [P] Add `startGameSchema` with `participantId` validation in `backend/src/api/schemas.ts`
+- [X] T003 [P] Update `RoomSnapshot` with `hostId`, `drawerId`. Add `RoomSessionResponse` with optional `secretWord` in `frontend/src/services/api.ts`
 
 **Checkpoint**: All shared types defined across backend and frontend.
 
@@ -35,9 +35,9 @@
 
 **Purpose**: Core room management that MUST be complete before any user story
 
-- [ ] T004 Implement `createRoom()` with `hostId` set to creator's participant ID. Implement `displayName()` trimming (empty/whitespace → "Player") in `backend/src/services/roomStore.ts`
-- [ ] T005 Implement `transferHost(room)` — reassign host to earliest-joined remaining participant in `backend/src/services/roomStore.ts`
-- [ ] T006 [P] Add `startPolling()` and `stopPolling()` methods to `RoomStore` — `setInterval` at 2000ms calling `fetchRoom()`, store interval ID for cleanup in `frontend/src/state/roomStore.ts`
+- [X] T004 Implement `createRoom()` with `hostId` set to creator's participant ID. Implement `displayName()` trimming (empty/whitespace → "Player") in `backend/src/services/roomStore.ts`
+- [X] T005 Implement `transferHost(room)` — reassign host to earliest-joined remaining participant in `backend/src/services/roomStore.ts`
+- [X] T006 [P] Add `startPolling()` and `stopPolling()` methods to `RoomStore` — `setInterval` at 2000ms calling `fetchRoom()`, store interval ID for cleanup in `frontend/src/state/roomStore.ts`
 
 **Checkpoint**: Room store foundation ready — user stories can now begin.
 
@@ -51,11 +51,11 @@
 
 ### Implementation
 
-- [ ] T007 [US1] Implement `startGame(code, participantId)` — trim all names, reject if any empty, reject if not host, reject if <2 participants, set `drawerId = hostId`, select word via deterministic hash (`sum(charCodes) % words.length`), set `status = "playing"`, return updated room in `backend/src/services/roomStore.ts`
-- [ ] T008 [US1] Add `PATCH /:code/start` route — call `startGame()`, map errors to 403 (not host), 400 (not enough players / empty names), 404 (room not found) in `backend/src/api/rooms.ts`
-- [ ] T009 [US1] Add `startGame(code, participantId)` method to API client in `frontend/src/services/api.ts`
-- [ ] T010 [US1] Add `isHost` (computed: `participantId === room.hostId`), `startGame()` (calls API, updates room state) to `RoomStore` in `frontend/src/state/roomStore.ts`
-- [ ] T011 [US1] Update `LobbyPage.tsx` — wire polling (mount: `startPolling()`, unmount: `stopPolling()`), conditional "Start Game" button (enabled only when `isHost` and `participants.length >= 2`), on click call `store.startGame()` and navigate to `/game`, show error messages, show "Host" badge next to host participant
+- [X] T007 [US1] Implement `startGame(code, participantId)` — trim all names, reject if any empty, reject if not host, reject if <2 participants, set `drawerId = hostId`, select word via deterministic hash (`sum(charCodes) % words.length`), set `status = "playing"`, return updated room in `backend/src/services/roomStore.ts`
+- [X] T008 [US1] Add `PATCH /:code/start` route — call `startGame()`, map errors to 403 (not host), 400 (not enough players / empty names), 404 (room not found) in `backend/src/api/rooms.ts`
+- [X] T009 [US1] Add `startGame(code, participantId)` method to API client in `frontend/src/services/api.ts`
+- [X] T010 [US1] Add `isHost` (computed: `participantId === room.hostId`), `startGame()` (calls API, updates room state) to `RoomStore` in `frontend/src/state/roomStore.ts`
+- [X] T011 [US1] Update `LobbyPage.tsx` — wire polling (mount: `startPolling()`, unmount: `stopPolling()`), conditional "Start Game" button (enabled only when `isHost` and `participants.length >= 2`), on click call `store.startGame()` and navigate to `/game`, show error messages, show "Host" badge next to host participant
 
 **Checkpoint**: Game can be started. Lobby fully functional with polling, host controls, and name validation.
 
@@ -69,10 +69,10 @@
 
 ### Implementation
 
-- [ ] T012 [US2] Update `toRoomSnapshot(room, viewerParticipantId)` — include `secretWord` in a response wrapper only when `viewerParticipantId === room.drawerId`. Return `RoomSessionResponse` shape in `backend/src/services/roomStore.ts`
-- [ ] T013 [US2] Update `GET /:code` handler — pass `participantId` query param to `toRoomSnapshot()`, return `RoomSessionResponse` shape in `backend/src/api/rooms.ts`
-- [ ] T014 [P] [US2] Add `isDrawer` (computed: `participantId === room.drawerId`) and `secretWord` (stored from response, null for guessers) to `RoomState` in `frontend/src/state/roomStore.ts`
-- [ ] T015 [US2] Update `GamePage.tsx` — if `isDrawer`: show "You are the drawer" badge prominently and display `secretWord` (e.g., "Draw this: rocket")
+- [X] T012 [US2] Update `toRoomSnapshot(room, viewerParticipantId)` — include `secretWord` in a response wrapper only when `viewerParticipantId === room.drawerId`. Return `RoomSessionResponse` shape in `backend/src/services/roomStore.ts`
+- [X] T013 [US2] Update `GET /:code` handler — pass `participantId` query param to `toRoomSnapshot()`, return `RoomSessionResponse` shape in `backend/src/api/rooms.ts`
+- [X] T014 [P] [US2] Add `isDrawer` (computed: `participantId === room.drawerId`) and `secretWord` (stored from response, null for guessers) to `RoomState` in `frontend/src/state/roomStore.ts`
+- [X] T015 [US2] Update `GamePage.tsx` — if `isDrawer`: show "You are the drawer" badge prominently and display `secretWord` (e.g., "Draw this: rocket")
 
 **Checkpoint**: Drawer sees badge + word. Backend enforces word visibility per role.
 
@@ -86,7 +86,7 @@
 
 ### Implementation
 
-- [ ] T016 [US3] Update `GamePage.tsx` — if not drawer: show neutral game view with no word visible. Handle the case where `room.status` is still "lobby" (redirect to lobby). Display "Waiting for drawing..." or similar neutral text in the canvas area.
+- [X] T016 [US3] Update `GamePage.tsx` — if not drawer: show neutral game view with no word visible. Handle the case where `room.status` is still "lobby" (redirect to lobby). Display "Waiting for drawing..." or similar neutral text in the canvas area.
 
 **Checkpoint**: Guesser sees no word. All per-role visibility requirements satisfied.
 
@@ -96,10 +96,10 @@
 
 **Purpose**: Verify all functionality with tests and manual validation
 
-- [ ] T017 [P] Write backend unit tests — `createRoom` sets `hostId`, `createRoom` defaults empty name to "Player", `startGame` fails if not host (403), fails if <2 participants (400), fails if any name empty (400), succeeds with valid inputs and sets status to "playing", assigns `drawerId = hostId`, selects word deterministically, `transferHost` reassigns to earliest remaining, `toRoomSnapshot` includes word for drawer and excludes for guesser, room isolation in `backend/src/**/*.test.ts`
-- [ ] T018 [P] Write backend integration tests — full flow: create → join → start → verify room status, drawerId, secretWord; drawer and guesser get different responses from same room in `backend/src/**/*.test.ts`
-- [ ] T019 [P] Write frontend unit tests — `api.startGame` sends correct PATCH, `api.fetchRoom` sends participantId param, `isHost`/`isDrawer` computed correctly, `secretWord` stored only when present, polling starts/stops in `frontend/src/**/*.test.ts`
-- [ ] T020 Manual E2E validation across two browser tabs — host starts game and sees badge + word, guesser sees no word, empty-name rejection, same room restarted yields same word, host disconnect transfers host
+- [X] T017 [P] Write backend unit tests — `createRoom` sets `hostId`, `createRoom` defaults empty name to "Player", `startGame` fails if not host (403), fails if <2 participants (400), fails if any name empty (400), succeeds with valid inputs and sets status to "playing", assigns `drawerId = hostId`, selects word deterministically, `transferHost` reassigns to earliest remaining, `toRoomSnapshot` includes word for drawer and excludes for guesser, room isolation in `backend/src/**/*.test.ts`
+- [X] T018 [P] Write backend integration tests — full flow: create → join → start → verify room status, drawerId, secretWord; drawer and guesser get different responses from same room in `backend/src/**/*.test.ts`
+- [X] T019 [P] Write frontend unit tests — `api.startGame` sends correct PATCH, `api.fetchRoom` sends participantId param, `isHost`/`isDrawer` computed correctly, `secretWord` stored only when present, polling starts/stops in `frontend/src/**/*.test.ts`
+- [X] T020 Manual E2E validation across two browser tabs — host starts game and sees badge + word, guesser sees no word, empty-name rejection, same room restarted yields same word, host disconnect transfers host
 
 **Checkpoint**: All tests pass. E2E scenarios verified.
 
