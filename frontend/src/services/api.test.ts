@@ -88,4 +88,79 @@ describe("api service", () => {
     expect(hasError).toBe(true);
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it("addStroke sends POST to /rooms/:code/strokes with points", async () => {
+    const mockResponse = {
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          strokes: [{ participantId: "p1", points: [{ x: 0.1, y: 0.2 }], color: "#000000", width: 3, timestamp: "2026-01-01T00:00:00.000Z" }]
+        }),
+    };
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Response);
+
+    const result = await api.addStroke("ABCD", "p1", [{ x: 0.1, y: 0.2 }]);
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/rooms/ABCD/strokes"),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ participantId: "p1", points: [{ x: 0.1, y: 0.2 }], color: "#000000", width: 3 })
+      })
+    );
+    expect(result.strokes).toHaveLength(1);
+  });
+
+  it("clearCanvas sends DELETE to /rooms/:code/strokes", async () => {
+    const mockResponse = {
+      ok: true,
+      json: () =>
+        Promise.resolve({ strokes: [] }),
+    };
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Response);
+
+    const result = await api.clearCanvas("ABCD", "p1");
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/rooms/ABCD/strokes"),
+      expect.objectContaining({
+        method: "DELETE",
+        body: JSON.stringify({ participantId: "p1" })
+      })
+    );
+    expect(result.strokes).toEqual([]);
+  });
+
+  it("submitGuess sends POST to /rooms/:code/guess with text", async () => {
+    const mockResponse = {
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          correct: true,
+          score: 100,
+          guess: {
+            participantId: "p1",
+            displayName: "Alice",
+            text: "rocket",
+            normalized: "rocket",
+            correct: true,
+            score: 100,
+            timestamp: "2026-01-01T00:00:00.000Z"
+          }
+        }),
+    };
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Response);
+
+    const result = await api.submitGuess("ABCD", "p1", "rocket");
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/rooms/ABCD/guess"),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ participantId: "p1", text: "rocket" })
+      })
+    );
+    expect(result.correct).toBe(true);
+    expect(result.score).toBe(100);
+  });
 });

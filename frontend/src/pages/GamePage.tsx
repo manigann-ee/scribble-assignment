@@ -1,15 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Canvas } from "../components/Canvas";
 import { Card } from "../components/Card";
-import { GuessForm } from "../components/GuessForm";
-import { ResultPanel } from "../components/ResultPanel";
+import { GuessHistory } from "../components/GuessHistory";
+import { GuessInput } from "../components/GuessInput";
 import { RoomCodeBadge } from "../components/RoomCodeBadge";
 import { Scoreboard } from "../components/Scoreboard";
-import { useRoomState } from "../state/roomStore";
+import { useRoomStore, useRoomState } from "../state/roomStore";
 
 export function GamePage() {
   const navigate = useNavigate();
   const { room, participantId, isDrawer, secretWord } = useRoomState();
+  const store = useRoomStore();
 
   useEffect(() => {
     if (!room) {
@@ -35,15 +37,20 @@ export function GamePage() {
 
       <div className="game-page__layout">
         <aside className="game-page__sidebar game-page__sidebar--left">
-          <Scoreboard />
-          <ResultPanel />
+          <Scoreboard participants={room.participants} scores={room.scores} currentUserId={participantId} />
+          <GuessHistory guesses={room.guesses} participantId={participantId} />
         </aside>
 
         <div className="game-page__main">
-          <Card title="Canvas">
-            <div className="canvas-placeholder" style={{ minHeight: '500px', backgroundColor: '#ffffff', border: '1px solid #e5e7eb' }}>
-              {isDrawer ? "Draw your masterpiece here!" : "Waiting for drawing..."}
-            </div>
+          <Card title={isDrawer ? "Draw the word" : "Canvas"}>
+            <Canvas strokes={room.strokes} isDrawer={isDrawer} />
+            {isDrawer && (
+              <div className="button-row">
+                <button className="button button--secondary" onClick={() => store.clearCanvas()}>
+                  Clear Canvas
+                </button>
+              </div>
+            )}
           </Card>
         </div>
 
@@ -66,15 +73,13 @@ export function GamePage() {
               )}
             </dl>
             {isDrawer && (
-              <div className="drawer-badge">
-                You are the drawer
-              </div>
+              <div className="drawer-badge">You are the drawer</div>
             )}
           </Card>
 
           {!isDrawer && (
             <Card title="Your Guess">
-              <GuessForm />
+              <GuessInput />
             </Card>
           )}
         </aside>

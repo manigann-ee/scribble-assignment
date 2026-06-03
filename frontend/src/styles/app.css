@@ -543,6 +543,129 @@ input {
   font-weight: 500;
 }
 
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  touch-action: none;
+}
+
+.canvas--interactive {
+  cursor: crosshair;
+}
+
+.drawer-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #e0e7ff;
+  color: var(--brand-strong);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.secret-word {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: 0.05em;
+}
+
+.guess-history {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.guess-entry {
+  display: grid;
+  gap: 4px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+
+.guess-entry--correct {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.guess-entry--own {
+  border-left: 3px solid var(--brand);
+}
+
+.guess-entry__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.guess-entry__name {
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.guess-entry__score {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.guess-entry--correct .guess-entry__score {
+  color: #16a34a;
+}
+
+.guess-entry__text {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.scoreboard {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.scoreboard__entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+
+.scoreboard__entry--me {
+  border-left: 3px solid var(--brand);
+  background: #eff6ff;
+}
+
+.scoreboard__name {
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.scoreboard__score {
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
 @media (max-width: 720px) {
   .app-shell {
     padding: 24px 16px;

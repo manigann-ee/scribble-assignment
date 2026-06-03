@@ -6,12 +6,40 @@ export interface Participant {
   joinedAt: string;
 }
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface Stroke {
+  participantId: string;
+  points: Point[];
+  color: string;
+  width: number;
+  timestamp: string;
+}
+
+export interface Guess {
+  participantId: string;
+  displayName: string;
+  text: string;
+  normalized: string;
+  correct: boolean;
+  score: number;
+  timestamp: string;
+}
+
+export type Scores = Record<string, number>;
+
 export interface RoomSnapshot {
   code: string;
   status: "lobby" | "playing";
   participants: Participant[];
   hostId: string;
   drawerId: string | null;
+  strokes: Stroke[];
+  guesses: Guess[];
+  scores: Scores;
   availableWords: string[];
   roles: ParticipantRole[];
 }
@@ -20,6 +48,12 @@ export interface RoomSessionResponse {
   participantId: string;
   room: RoomSnapshot;
   secretWord?: string;
+}
+
+export interface GuessResult {
+  correct: boolean;
+  score: number;
+  guess: Guess;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -65,6 +99,24 @@ export const api = {
     return request<RoomSessionResponse>(`/rooms/${encodeURIComponent(code)}/start`, {
       method: "PATCH",
       body: JSON.stringify({ participantId })
+    });
+  },
+  addStroke(code: string, participantId: string, points: Point[], color = "#000000", width = 3) {
+    return request<{ strokes: Stroke[] }>(`/rooms/${encodeURIComponent(code)}/strokes`, {
+      method: "POST",
+      body: JSON.stringify({ participantId, points, color, width })
+    });
+  },
+  clearCanvas(code: string, participantId: string) {
+    return request<{ strokes: Stroke[] }>(`/rooms/${encodeURIComponent(code)}/strokes`, {
+      method: "DELETE",
+      body: JSON.stringify({ participantId })
+    });
+  },
+  submitGuess(code: string, participantId: string, text: string) {
+    return request<GuessResult>(`/rooms/${encodeURIComponent(code)}/guess`, {
+      method: "POST",
+      body: JSON.stringify({ participantId, text })
     });
   }
 };

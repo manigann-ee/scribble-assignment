@@ -7,12 +7,13 @@ import {
   useSyncExternalStore,
   type PropsWithChildren
 } from "react";
-import { api, type RoomSessionResponse, type RoomSnapshot } from "../services/api";
+import { api, type GuessResult, type Point, type RoomSessionResponse, type RoomSnapshot } from "../services/api";
 
 export interface RoomState {
   room: RoomSnapshot | null;
   participantId: string | null;
   error: string | null;
+  submitError: string | null;
   isLoading: boolean;
   isHost: boolean;
   isDrawer: boolean;
@@ -26,6 +27,7 @@ export class RoomStore {
     room: null,
     participantId: null,
     error: null,
+    submitError: null,
     isLoading: false,
     isHost: false,
     isDrawer: false,
@@ -144,6 +146,62 @@ export class RoomStore {
     }
 
     return response;
+  }
+
+  async addStroke(points: Point[]) {
+    if (!this.state.room || !this.state.participantId || !this.state.isDrawer) {
+      return;
+    }
+
+    const drawerColor = "#000000";
+    const drawerWidth = 3;
+
+    try {
+      await api.addStroke(this.state.room.code, this.state.participantId, points, drawerColor, drawerWidth);
+    } catch {
+      this.setState({ error: "Failed to save stroke. Retrying..." });
+    }
+  }
+
+  async clearCanvas() {
+    if (!this.state.room || !this.state.participantId || !this.state.isDrawer) {
+      return;
+    }
+
+    try {
+      const result = await api.clearCanvas(this.state.room.code, this.state.participantId);
+      this.setState({ room: { ...this.state.room, strokes: result.strokes } });
+    } catch {
+      this.setState({ error: "Failed to clear canvas. Retrying..." });
+    }
+  }
+
+  async submitGuess(text: string): Promise<GuessResult | null> {
+    if (!this.state.room || !this.state.participantId) {
+      return null;
+    }
+
+    const trimmed = text.trim();
+    if (!trimmed) {
+      this.setState({ submitError: "Guess cannot be empty" });
+      return null;
+    }
+
+    if (trimmed.length > 100) {
+      this.setState({ submitError: "Guess must be 100 characters or fewer" });
+      return null;
+    }
+
+    this.setState({ submitError: null });
+
+    try {
+      const result = await api.submitGuess(this.state.room.code, this.state.participantId, text);
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Guess could not be submitted — please try again";
+      this.setState({ submitError: message });
+      return null;
+    }
   }
 }
 

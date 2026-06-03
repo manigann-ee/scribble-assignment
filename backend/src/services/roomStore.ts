@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Participant, Room, RoomSessionResponse, RoomSnapshot } from "../models/game.js";
+import type { Guess, GuessResult, Participant, Point, Room, RoomSessionResponse, RoomSnapshot, Stroke } from "../models/game.js";
 import { STARTER_ROLES, STARTER_WORDS } from "../seed/starterData.js";
 
 const rooms = new Map<string, Room>();
@@ -59,6 +59,9 @@ export function createRoom(playerName?: string) {
     hostId: participant.id,
     drawerId: null,
     secretWord: null,
+    strokes: [],
+    guesses: [],
+    scores: {},
     createdAt: now(),
     updatedAt: now()
   };
@@ -125,11 +128,117 @@ export function startGame(code: string, participantId: string) {
   room.drawerId = room.hostId;
   const hash = room.code.split("").reduce((sum, c) => sum + c.charCodeAt(0), 0);
   room.secretWord = [...STARTER_WORDS][hash % STARTER_WORDS.length];
+  room.strokes = [];
+  room.guesses = [];
+  room.scores = {};
   room.status = "playing";
 
   saveRoom(room);
 
   return getRoom(code);
+}
+
+export function addStroke(code: string, participantId: string, points: Point[], color: string, width: number) {
+  const room = rooms.get(code);
+
+  if (!room) {
+    return null;
+  }
+
+  if (room.status !== "playing") {
+    throw new Error("Round is not active");
+  }
+
+  if (room.drawerId !== participantId) {
+    throw new Error("Only the drawer can add strokes");
+  }
+
+  const stroke: Stroke = {
+    participantId,
+    points,
+    color,
+    width,
+    timestamp: now()
+  };
+
+  room.strokes.push(stroke);
+  saveRoom(room);
+
+  return getRoom(code)!.strokes;
+}
+
+export function clearCanvas(code: string, participantId: string) {
+  const room = rooms.get(code);
+
+  if (!room) {
+    return null;
+  }
+
+  if (room.drawerId !== participantId) {
+    throw new Error("Only the drawer can clear the canvas");
+  }
+
+  room.strokes = [];
+  saveRoom(room);
+
+  return room.strokes;
+}
+
+export function submitGuess(code: string, participantId: string, text: string): GuessResult | null {
+  const room = rooms.get(code);
+
+  if (!room) {
+    return null;
+  }
+
+  if (room.status !== "playing") {
+    throw new Error("Round is over");
+  }
+
+  const trimmed = text.trim();
+
+  if (!trimmed) {
+    throw new Error("Guess cannot be empty");
+  }
+
+  if (trimmed.length > 100) {
+    throw new Error("Guess must be 100 characters or fewer");
+  }
+
+  const participant = room.participants.find((p) => p.id === participantId);
+  const displayName = participant?.name ?? "Unknown";
+
+  const normalized = trimmed.toLowerCase();
+  const secretNormalized = room.secretWord?.toLowerCase() ?? "";
+  const correct = normalized === secretNormalized;
+
+  const alreadyCorrect = room.guesses.some(
+    (g) => g.participantId === participantId && g.correct
+  );
+
+  let score = 0;
+  if (correct && !alreadyCorrect) {
+    score = 100;
+  }
+
+  if (correct && !alreadyCorrect) {
+    room.scores[participantId] = (room.scores[participantId] ?? 0) + score;
+  }
+
+  const guess: Guess = {
+    participantId,
+    displayName,
+    text,
+    normalized,
+    correct,
+    score,
+    timestamp: now()
+  };
+
+  room.guesses.push(guess);
+  saveRoom(room);
+
+  return { correct, score, guess };
 }
 
 export function transferHost(room: Room) {
@@ -153,6 +262,9 @@ export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSe
     participants: room.participants.map((participant) => ({ ...participant })),
     hostId: room.hostId,
     drawerId: room.drawerId,
+    strokes: room.strokes.map((s) => ({ ...s, points: [...s.points] })),
+    guesses: room.guesses.map((g) => ({ ...g })),
+    scores: { ...room.scores },
     availableWords: listWords(),
     roles: [...STARTER_ROLES]
   };
